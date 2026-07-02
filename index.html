@@ -1157,7 +1157,7 @@ function buildFacHTML(v){
   const hasExtra=v.extra>0;
   const docType=isCot?'COTIZACIÓN':'FACTURA';
 
-  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:48px 40px 32px;min-width:0;letter-spacing:-0.01em">
+  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:48px 40px 32px;min-width:0;letter-spacing:-0.01em;display:flex;flex-direction:column;box-sizing:border-box;aspect-ratio:8.5/11;min-height:520px">
 
     ${cancelada?`<div style="border:2px solid #000;text-align:center;padding:10px;font-size:15px;font-weight:800;letter-spacing:.15em;margin-bottom:28px">CANCELADA</div>`:''}
 
@@ -1202,8 +1202,11 @@ function buildFacHTML(v){
       <div style="width:100px;text-align:right;font-size:14px;font-weight:700">${cop(i.subtotal)}</div>
     </div>`).join('')}
 
+    <!-- ── Flexible spacer (fills page height) ── -->
+    <div style="flex:1 1 auto;min-height:32px"></div>
+
     <!-- ── Totals ── -->
-    <div style="display:flex;justify-content:flex-end;margin-top:28px">
+    <div style="display:flex;justify-content:flex-end">
       <div style="width:290px">
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">SUBTOTAL</span><span>${cop(v.subtotal)}</span></div>
         ${hasDisc?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">DESCUENTO (${v.discPct}%)</span><span>−${cop(v.discAmt)}</span></div>`:''}
@@ -1317,8 +1320,9 @@ function dlPDF(id){
       const wrap=document.createElement('div');
       wrap.style.cssText='position:fixed;left:-9999px;top:0;width:600px';
       wrap.innerHTML=buildFacHTML(v);
+      const qd=wrap.querySelector('#qr-'+v.id);if(qd)qd.id='qr-pdf-'+v.id;
       document.body.appendChild(wrap);
-      renderQR('qr-'+v.id,'https://instagram.com/doreviajewelry');
+      renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
       showToast('Generando PDF...');
       setTimeout(()=>{
         html2pdf().set({margin:0,filename:`${v.docId}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF'},jsPDF:{unit:'pt',format:'letter',orientation:'portrait'}}).from(wrap).save().then(()=>{document.body.removeChild(wrap)});
