@@ -1326,8 +1326,7 @@ function _genPdfBlob(v){
     renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
     const done=()=>{if(clip.parentNode)clip.parentNode.removeChild(clip);};
     setTimeout(()=>{
-      const w=inner.offsetWidth||600,h=inner.offsetHeight||900;
-      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true,windowWidth:600},jsPDF:{unit:'px',hotfixes:['px_scaling'],format:[w,h+14],orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
+      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true},jsPDF:{unit:'pt',format:'letter',orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
     },350);
   });
 }
