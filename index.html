@@ -1321,28 +1321,31 @@ let _pdfCache={};
 const _isMobile=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
 function _genPdfBlob(v){
   return new Promise((resolve,reject)=>{
+    const A4H=846;
+    const meas=document.createElement('div');
+    meas.style.cssText='position:absolute;left:-9999px;top:0;width:600px';
+    let html=buildFacHTML(v);
+    meas.innerHTML=html;
+    document.body.appendChild(meas);
+    void meas.offsetHeight;
+    const natural=meas.offsetHeight;
+    meas.remove();
+    const extra=Math.max(0,A4H-natural);
+    const h1=Math.round(24+extra*0.62),h2=Math.round(16+extra*0.38);
+    html=html.replace('flex:2 1 0;min-height:24px','height:'+h1+'px').replace('flex:1 1 0;min-height:16px','height:'+h2+'px');
     const clip=document.createElement('div');
     clip.style.cssText='height:0;overflow:hidden';
     const inner=document.createElement('div');
     inner.style.cssText='width:600px;background:#FFFFFF';
-    inner.innerHTML=buildFacHTML(v);
+    inner.innerHTML=html;
     const qd=inner.querySelector('#qr-'+v.id);if(qd)qd.id='qr-pdf-'+v.id;
     clip.appendChild(inner);
     document.body.appendChild(clip);
     renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
     const done=()=>{if(clip.parentNode)clip.parentNode.removeChild(clip);};
     setTimeout(()=>{
-      const sp1=inner.querySelector('[data-sp="1"]'),sp2=inner.querySelector('[data-sp="2"]');
-      if(sp1&&sp2){
-        sp1.style.flex='none';sp1.style.minHeight='0';sp1.style.height='0px';
-        sp2.style.flex='none';sp2.style.minHeight='0';sp2.style.height='0px';
-        void inner.offsetHeight;
-        const free=Math.max(0,849-inner.offsetHeight);
-        sp1.style.height=(free*0.62)+'px';
-        sp2.style.height=(free*0.38)+'px';
-        void inner.offsetHeight;
-      }
-      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true},jsPDF:{unit:'pt',format:'a4',orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
+      const H=inner.offsetHeight;
+      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true,width:600,height:H},jsPDF:{unit:'pt',format:'a4',orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
     },350);
   });
 }
