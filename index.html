@@ -1157,12 +1157,12 @@ function buildFacHTML(v){
   const hasExtra=v.extra>0;
   const docType=isCot?'COTIZACIÓN':'FACTURA';
 
-  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:48px 40px 32px;min-width:0;letter-spacing:-0.01em">
+  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:56px 48px 44px;min-width:0;letter-spacing:-0.01em;display:flex;flex-direction:column;box-sizing:border-box">
 
     ${cancelada?`<div style="border:2px solid #000;text-align:center;padding:10px;font-size:15px;font-weight:800;letter-spacing:.15em;margin-bottom:28px">CANCELADA</div>`:''}
 
     <!-- ── Brand wordmark ── -->
-    <div style="font-size:52px;font-weight:800;letter-spacing:-0.03em;line-height:.95;text-transform:uppercase;margin-bottom:40px">DOREVIA</div>
+    <div style="font-size:54px;font-weight:800;letter-spacing:-0.03em;line-height:.95;text-transform:uppercase;margin-bottom:44px">DOREVIA</div>
 
     <!-- ── Meta row ── -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:34px">
@@ -1192,7 +1192,7 @@ function buildFacHTML(v){
 
     <!-- ── Items ── -->
     ${v.items.map(i=>`
-    <div style="display:flex;align-items:flex-start;padding:12px 0;border-bottom:1px solid #E0E0E0">
+    <div style="display:flex;align-items:flex-start;padding:13px 0;border-bottom:1px solid #E0E0E0">
       <div style="flex:1">
         <div style="font-size:14px;font-weight:700">${i.name}</div>
         <div style="font-size:11px;font-weight:500;color:#888;margin-top:2px">SKU ${i.sku}</div>
@@ -1202,8 +1202,11 @@ function buildFacHTML(v){
       <div style="width:100px;text-align:right;font-size:14px;font-weight:700">${cop(i.subtotal)}</div>
     </div>`).join('')}
 
+    <!-- ── Spacer 1 (altura calculada en dlPDF para A4) ── -->
+    <div data-sp="1" style="flex:2 1 0;min-height:24px"></div>
+
     <!-- ── Totals ── -->
-    <div style="display:flex;justify-content:flex-end;margin-top:28px">
+    <div style="display:flex;justify-content:flex-end">
       <div style="width:290px">
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">SUBTOTAL</span><span>${cop(v.subtotal)}</span></div>
         ${hasDisc?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">DESCUENTO (${v.discPct}%)</span><span>−${cop(v.discAmt)}</span></div>`:''}
@@ -1217,8 +1220,11 @@ function buildFacHTML(v){
       </div>
     </div>
 
+    <!-- ── Spacer 2 (altura calculada en dlPDF para A4) ── -->
+    <div data-sp="2" style="flex:1 1 0;min-height:16px"></div>
+
     <!-- ── Separator ── -->
-    <div style="height:2px;background:#000;margin:40px 0 24px"></div>
+    <div style="height:2px;background:#000;margin:0 0 24px"></div>
 
     <!-- ── Payment + Terms ── -->
     <div style="display:flex;gap:32px;align-items:flex-start">
@@ -1326,7 +1332,17 @@ function _genPdfBlob(v){
     renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
     const done=()=>{if(clip.parentNode)clip.parentNode.removeChild(clip);};
     setTimeout(()=>{
-      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true},jsPDF:{unit:'pt',format:'letter',orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
+      const sp1=inner.querySelector('[data-sp="1"]'),sp2=inner.querySelector('[data-sp="2"]');
+      if(sp1&&sp2){
+        sp1.style.flex='none';sp1.style.minHeight='0';sp1.style.height='0px';
+        sp2.style.flex='none';sp2.style.minHeight='0';sp2.style.height='0px';
+        void inner.offsetHeight;
+        const free=Math.max(0,849-inner.offsetHeight);
+        sp1.style.height=(free*0.62)+'px';
+        sp2.style.height=(free*0.38)+'px';
+        void inner.offsetHeight;
+      }
+      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true},jsPDF:{unit:'pt',format:'a4',orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
     },350);
   });
 }
