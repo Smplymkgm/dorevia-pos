@@ -1157,15 +1157,15 @@ function buildFacHTML(v){
   const hasExtra=v.extra>0;
   const docType=isCot?'COTIZACIÓN':'FACTURA';
 
-  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:52px 44px 44px;min-width:0;letter-spacing:-0.01em">
+  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:48px 40px 32px;min-width:0;letter-spacing:-0.01em">
 
     ${cancelada?`<div style="border:2px solid #000;text-align:center;padding:10px;font-size:15px;font-weight:800;letter-spacing:.15em;margin-bottom:28px">CANCELADA</div>`:''}
 
     <!-- ── Brand wordmark ── -->
-    <div style="font-size:52px;font-weight:800;letter-spacing:-0.03em;line-height:.95;text-transform:uppercase;margin-bottom:48px">DOREVIA</div>
+    <div style="font-size:52px;font-weight:800;letter-spacing:-0.03em;line-height:.95;text-transform:uppercase;margin-bottom:40px">DOREVIA</div>
 
     <!-- ── Meta row ── -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:44px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:34px">
       <div style="flex:1">
         <div style="font-size:14px;font-weight:700">${fmtD(v.fecha)}</div>
         <div style="font-size:14px;font-weight:700">${v.cliente}</div>
@@ -1192,7 +1192,7 @@ function buildFacHTML(v){
 
     <!-- ── Items ── -->
     ${v.items.map(i=>`
-    <div style="display:flex;align-items:flex-start;padding:15px 0;border-bottom:1px solid #E0E0E0">
+    <div style="display:flex;align-items:flex-start;padding:12px 0;border-bottom:1px solid #E0E0E0">
       <div style="flex:1">
         <div style="font-size:14px;font-weight:700">${i.name}</div>
         <div style="font-size:11px;font-weight:500;color:#888;margin-top:2px">SKU ${i.sku}</div>
@@ -1203,7 +1203,7 @@ function buildFacHTML(v){
     </div>`).join('')}
 
     <!-- ── Totals ── -->
-    <div style="display:flex;justify-content:flex-end;margin-top:36px">
+    <div style="display:flex;justify-content:flex-end;margin-top:28px">
       <div style="width:290px">
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">SUBTOTAL</span><span>${cop(v.subtotal)}</span></div>
         ${hasDisc?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">DESCUENTO (${v.discPct}%)</span><span>−${cop(v.discAmt)}</span></div>`:''}
@@ -1218,7 +1218,7 @@ function buildFacHTML(v){
     </div>
 
     <!-- ── Separator ── -->
-    <div style="height:2px;background:#000;margin:48px 0 28px"></div>
+    <div style="height:2px;background:#000;margin:40px 0 24px"></div>
 
     <!-- ── Payment + Terms ── -->
     <div style="display:flex;gap:32px;align-items:flex-start">
@@ -1243,7 +1243,7 @@ function buildFacHTML(v){
     </div>
 
     <!-- ── Footer ── -->
-    <div style="height:1px;background:#000;margin:40px 0 14px"></div>
+    <div style="height:1px;background:#000;margin:28px 0 12px"></div>
     <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.04em;color:#000">
       <div>DOREVIA · JOYERÍA</div>
       <div>@DOREVIAJEWELRY</div>
