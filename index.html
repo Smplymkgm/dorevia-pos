@@ -1267,6 +1267,7 @@ function openDetail(id){
     <div class="btn-row no-print"><button class="btn btn-secondary" onclick="dlPDF(${v.id})">${svgD} Descargar PDF</button><button class="btn btn-danger btn-sm" style="flex:0" onclick="delVenta(${v.id})">${svgX}</button></div>
     <button class="btn btn-secondary no-print" onclick="closeModal()" style="margin-bottom:0">Cerrar</button>`);
   renderQR('qr-'+v.id,'https://instagram.com/doreviajewelry');
+  prewarmPDF(v.id);
 }
 
 function addAbono(vid){const v=S.ventas.find(x=>x.id===vid);if(!v)return;const m=parseFloat(document.getElementById('ab-m')?.value)||0,f=document.getElementById('ab-f')?.value;if(!m){showToast('Ingresa un monto');return}v.abonado+=m;v.saldo=Math.max(0,v.total-v.abonado);v.estado=v.saldo<=0?'Pagado':'Abono';if(!v.abonos)v.abonos=[];v.abonos.push({fecha:f||today(),monto:m,user:curUser().name});sv(KEYS.ventas,S.ventas);showToast(`Abono ${cop(m)} · Saldo: ${cop(v.saldo)}`);closeModal();if(S.currentPage==='historial')renderHist();if(S.currentPage==='dashboard')renderDash()}
@@ -1310,39 +1311,54 @@ function html2pdfReady(cb){
   s.onerror=()=>showToast('Error al cargar librería PDF. Verifica conexión a internet.');
   document.head.appendChild(s);
 }
+let _pdfCache={};
+const _isMobile=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+function _genPdfBlob(v){
+  return new Promise((resolve,reject)=>{
+    const clip=document.createElement('div');
+    clip.style.cssText='height:0;overflow:hidden';
+    const inner=document.createElement('div');
+    inner.style.cssText='width:600px;background:#FFFFFF';
+    inner.innerHTML=buildFacHTML(v);
+    const qd=inner.querySelector('#qr-'+v.id);if(qd)qd.id='qr-pdf-'+v.id;
+    clip.appendChild(inner);
+    document.body.appendChild(clip);
+    renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
+    const done=()=>{if(clip.parentNode)clip.parentNode.removeChild(clip);};
+    setTimeout(()=>{
+      const w=inner.offsetWidth||600,h=inner.offsetHeight||900;
+      html2pdf().set({margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true,windowWidth:600},jsPDF:{unit:'px',hotfixes:['px_scaling'],format:[w,h+14],orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{done();resolve(blob);}).catch((e)=>{done();reject(e);});
+    },350);
+  });
+}
+function prewarmPDF(id){
+  if(!_isMobile())return;
+  delete _pdfCache[id];delete _pdfCache['p_'+id];
+  const v=S.ventas.find(x=>x.id===id);if(!v)return;
+  _pdfCache['p_'+id]=true;
+  qrReady(()=>html2pdfReady(()=>{_genPdfBlob(v).then((b)=>{_pdfCache[id]=b;delete _pdfCache['p_'+id];}).catch(()=>{delete _pdfCache['p_'+id];});}));
+}
+function _deliverPDF(v,blob){
+  const fname=`${v.docId}.pdf`;
+  let file=null;try{file=new File([blob],fname,{type:'application/pdf'});}catch(e){}
+  if(_isMobile()&&file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    return navigator.share({files:[file],title:`DOREVIA ${v.docId}`});
+  }
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  return Promise.resolve();
+}
 function dlPDF(id){
   const v=S.ventas.find(x=>x.id===id);if(!v)return;
-  qrReady(()=>{
-    html2pdfReady(()=>{
-      showToast('Generando PDF...');
-      const clip=document.createElement('div');
-      clip.style.cssText='height:0;overflow:hidden';
-      const inner=document.createElement('div');
-      inner.style.cssText='width:600px;background:#FFFFFF';
-      inner.innerHTML=buildFacHTML(v);
-      const qd=inner.querySelector('#qr-'+v.id);if(qd)qd.id='qr-pdf-'+v.id;
-      clip.appendChild(inner);
-      document.body.appendChild(clip);
-      renderQR('qr-pdf-'+v.id,'https://instagram.com/doreviajewelry');
-      const done=()=>{if(clip.parentNode)clip.parentNode.removeChild(clip);};
-      setTimeout(()=>{
-        const w=inner.offsetWidth||600,h=inner.offsetHeight||900;
-        html2pdf().set({margin:0,filename:`${v.docId}.pdf`,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,backgroundColor:'#FFFFFF',useCORS:true,windowWidth:600},jsPDF:{unit:'px',hotfixes:['px_scaling'],format:[w,h+14],orientation:'portrait'}}).from(inner).outputPdf('blob').then((blob)=>{
-          done();
-          const fname=`${v.docId}.pdf`;
-          const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
-          let file=null;try{file=new File([blob],fname,{type:'application/pdf'});}catch(e){}
-          if(isMobile&&file&&navigator.canShare&&navigator.canShare({files:[file]})){
-            navigator.share({files:[file],title:`DOREVIA ${v.docId}`}).catch(()=>{
-              const url=URL.createObjectURL(blob);window.open(url,'_blank');setTimeout(()=>URL.revokeObjectURL(url),10000);
-            });
-          }else{
-            const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
-          }
-        }).catch(()=>{done();showToast('Error al generar el PDF');});
-      },350);
+  if(_pdfCache[id]){_deliverPDF(v,_pdfCache[id]).catch(()=>{});return;}
+  showToast('Generando PDF...');
+  qrReady(()=>html2pdfReady(()=>{
+    _genPdfBlob(v).then((b)=>{_pdfCache[id]=b;return _deliverPDF(v,b);}).catch((e)=>{
+      if(e&&e.name==='AbortError')return;
+      const isShareErr=e&&(e.name==='NotAllowedError'||e.name==='DataError');
+      if(isShareErr&&_pdfCache[id]){const url=URL.createObjectURL(_pdfCache[id]);const a=document.createElement('a');a.href=url;a.download=`${v.docId}.pdf`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);}
+      else showToast('Error al generar el PDF');
     });
-  });
+  }));
 }
 
 /* CONTACTOS */
