@@ -1155,116 +1155,99 @@ function buildFacHTML(v){
   const hasPending=!isCot&&v.saldo>0&&!cancelada;
   const hasDisc=v.discAmt>0;
   const hasExtra=v.extra>0;
+  const docType=isCot?'COTIZACIÓN':'FACTURA';
 
-  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:40px 36px 36px;min-width:0">
+  return`<div style="background:#FFFFFF;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#000000;padding:48px 40px 32px;min-width:0;letter-spacing:-0.01em">
 
-    ${cancelada?`<div style="border:1.5px solid #000;text-align:center;padding:8px;font-size:13px;font-weight:800;letter-spacing:.1em;margin-bottom:20px">CANCELADA</div>`:''}
+    ${cancelada?`<div style="border:2px solid #000;text-align:center;padding:10px;font-size:15px;font-weight:800;letter-spacing:.15em;margin-bottom:28px">CANCELADA</div>`:''}
 
-    <!-- ── Header ── -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px">
-      <div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:700;letter-spacing:.06em;line-height:1;color:#000000">DOREVIA</div>
-        <div style="font-size:11px;color:#555;letter-spacing:.12em;text-transform:uppercase;margin-top:4px">Joyería</div>
+    <!-- ── Brand wordmark ── -->
+    <div style="font-size:52px;font-weight:800;letter-spacing:-0.03em;line-height:.95;text-transform:uppercase;margin-bottom:40px">DOREVIA</div>
+
+    <!-- ── Meta row ── -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:34px">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${fmtD(v.fecha)}</div>
+        <div style="font-size:14px;font-weight:700">${v.cliente}</div>
+        ${v.telefono?`<div style="font-size:12px;font-weight:500;color:#666;margin-top:2px">${v.telefono}</div>`:''}
       </div>
-      <div style="text-align:right">
-        <div style="font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1;color:#000000">${isCot?'COTIZACIÓN':'FACTURA'}</div>
-        <div style="font-size:13px;color:#555;margin-top:6px;letter-spacing:.02em">#${v.docId}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">#${v.docId}</div>
+        ${v.nota?`<div style="font-size:14px;font-weight:700">${v.nota}</div>`:''}
       </div>
-    </div>
-
-    <!-- ── Client + meta ── -->
-    <div style="display:grid;grid-template-columns:1fr auto;gap:24px;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid #000">
-      <div>
-        <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Cliente</div>
-        <div style="font-size:17px;font-weight:700;color:#000000;line-height:1.2">${v.cliente}</div>
-        ${v.telefono?`<div style="font-size:12px;color:#555;margin-top:4px">${v.telefono}</div>`:''}
-      </div>
-      <div style="text-align:right;display:flex;flex-direction:column;gap:10px">
-        <div>
-          <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Fecha</div>
-          <div style="font-size:13px;font-weight:500;color:#000000">${fmtD(v.fecha)}</div>
-        </div>
-        ${!isCot&&v.metodoPago?`<div><div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px">Pago</div><div style="font-size:13px;font-weight:500;color:#000000">${v.metodoPago}</div></div>`:''}
+      <div style="flex:1;text-align:right">
+        <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;line-height:1">${docType}</div>
       </div>
     </div>
 
-    <!-- ── Items label ── -->
-    <div style="font-size:22px;font-weight:700;color:#000000;margin-bottom:16px">Productos</div>
-    <div style="height:1.5px;background:#000000;margin-bottom:2px"></div>
+    <!-- ── Items header ── -->
+    <div style="height:2px;background:#000;margin-bottom:8px"></div>
+    <div style="display:flex;font-size:10px;font-weight:700;letter-spacing:.08em;color:#888;text-transform:uppercase;padding-bottom:8px">
+      <div style="flex:1">Descripción</div>
+      <div style="width:50px;text-align:right">Cant</div>
+      <div style="width:90px;text-align:right">Precio</div>
+      <div style="width:100px;text-align:right">Importe</div>
+    </div>
+    <div style="height:1px;background:#000;margin-bottom:0"></div>
 
-    <!-- ── Items list ── -->
+    <!-- ── Items ── -->
     ${v.items.map(i=>`
-    <div style="display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-bottom:1px solid #CCC">
-      <div>
-        <div style="font-size:14px;font-weight:500;color:#000000">${i.name}</div>
-        <div style="font-size:11.5px;color:#555;margin-top:2px">${i.qty} unidad${i.qty>1?'es':''} · ${cop(i.unitPrice)} c/u</div>
+    <div style="display:flex;align-items:flex-start;padding:12px 0;border-bottom:1px solid #E0E0E0">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700">${i.name}</div>
+        <div style="font-size:11px;font-weight:500;color:#888;margin-top:2px">SKU ${i.sku}</div>
       </div>
-      <div style="font-size:15px;font-weight:700;color:#000000;white-space:nowrap;margin-left:16px">${cop(i.subtotal)}</div>
+      <div style="width:50px;text-align:right;font-size:14px;font-weight:700">${i.qty}</div>
+      <div style="width:90px;text-align:right;font-size:14px;font-weight:700">${cop(i.unitPrice)}</div>
+      <div style="width:100px;text-align:right;font-size:14px;font-weight:700">${cop(i.subtotal)}</div>
     </div>`).join('')}
 
     <!-- ── Totals ── -->
-    <div style="margin-top:20px;display:flex;flex-direction:column;align-items:flex-end;gap:0">
-      <div style="display:flex;justify-content:space-between;width:240px;padding:5px 0">
-        <span style="font-size:12px;color:#555">Subtotal</span>
-        <span style="font-size:13px;color:#000000">${cop(v.subtotal)}</span>
+    <div style="display:flex;justify-content:flex-end;margin-top:28px">
+      <div style="width:290px">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">SUBTOTAL</span><span>${cop(v.subtotal)}</span></div>
+        ${hasDisc?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">DESCUENTO (${v.discPct}%)</span><span>−${cop(v.discAmt)}</span></div>`:''}
+        ${hasExtra?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">${(v.extraDesc||'CARGO ADICIONAL').toUpperCase()}</span><span>+${cop(v.extra)}</span></div>`:''}
+        ${v.iva?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-weight:600"><span style="color:#666">IVA (19%)</span><span>${cop(v.ivaAmt)}</span></div>`:''}
+        <div style="height:2px;background:#000;margin:8px 0"></div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:2px 0"><span style="font-size:15px;font-weight:800">TOTAL (COP)</span><span style="font-size:26px;font-weight:800">${cop(v.total)}</span></div>
+        ${hasPending?`
+        <div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:13px;font-weight:600;border-top:1px solid #E0E0E0;margin-top:8px"><span style="color:#666">ABONADO</span><span>${cop(v.abonado)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:2px 0;font-size:14px;font-weight:800"><span>SALDO PENDIENTE</span><span>${cop(v.saldo)}</span></div>`:''}
       </div>
-      ${hasDisc?`
-      <div style="display:flex;justify-content:space-between;width:240px;padding:5px 0">
-        <span style="font-size:12px;color:#555">Descuento ${v.discPct}%</span>
-        <span style="font-size:13px;color:#000000">−${cop(v.discAmt)}</span>
-      </div>`:''}
-      ${hasExtra?`
-      <div style="display:flex;justify-content:space-between;width:240px;padding:5px 0">
-        <span style="font-size:12px;color:#555">${v.extraDesc||'Cargo adicional'}</span>
-        <span style="font-size:13px;color:#000000">+${cop(v.extra)}</span>
-      </div>`:''}
-      ${v.iva?`
-      <div style="display:flex;justify-content:space-between;width:240px;padding:5px 0">
-        <span style="font-size:12px;color:#555">IVA 19%</span>
-        <span style="font-size:13px;color:#000000">${cop(v.ivaAmt)}</span>
-      </div>`:''}
-      <div style="display:flex;justify-content:space-between;align-items:baseline;width:240px;border-top:1.5px solid #000000;margin-top:8px;padding-top:12px">
-        <span style="font-size:15px;font-weight:700;color:#000000">Total</span>
-        <span style="font-size:24px;font-weight:800;color:#000000">${cop(v.total)}</span>
-      </div>
-      ${hasPending?`
-      <div style="display:flex;justify-content:space-between;width:240px;padding:6px 0;border-top:1px solid #CCC;margin-top:4px">
-        <span style="font-size:12px;color:#555">Abonado</span>
-        <span style="font-size:13px;color:#000000">${cop(v.abonado)}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;width:240px;padding:4px 0">
-        <span style="font-size:13px;font-weight:700;color:#000000">Saldo pendiente</span>
-        <span style="font-size:15px;font-weight:800;color:#000000">${cop(v.saldo)}</span>
-      </div>`:''}
     </div>
 
-    ${v.nota?`<p style="font-size:11px;color:#555;font-style:italic;margin-top:20px;padding-top:14px;border-top:1px solid #CCC">Nota: ${v.nota}</p>`:''}
+    <!-- ── Separator ── -->
+    <div style="height:2px;background:#000;margin:40px 0 24px"></div>
 
-    <!-- ── Garantía ── -->
-    <div style="margin-top:32px;padding-top:20px;border-top:1px solid #CCC">
-      <div style="font-size:14px;font-weight:700;color:#000000;margin-bottom:8px">Garantía</div>
-      <div style="font-size:11px;color:#555;line-height:1.65">Garantía de por vida sobre el oro 18k: cubre defectos de costura, soldadura y cierre. No cubre rayones, golpes, deformaciones ni pérdida derivados del uso o mal manejo.</div>
-    </div>
-
-    <!-- ── Agradecimiento ── -->
-    <div style="margin-top:24px;text-align:center">
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:14px;font-style:italic;color:#000000;line-height:1.5">Gracias por confiar en Dorevia.<br>Cada pieza está hecha a mano con dedicación.</div>
-    </div>
-
-    <!-- ── QR + Web ── -->
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid #CCC;display:flex;align-items:center;justify-content:center;gap:16px">
-      <div id="qr-${v.id}" style="width:72px;height:72px;flex-shrink:0"></div>
-      <div style="text-align:left">
-        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Síguenos</div>
-        <div style="font-size:13px;font-weight:600;color:#000000">@doreviajewelry</div>
-        <div style="font-size:12px;color:#555;margin-top:4px">www.dorevia.co</div>
+    <!-- ── Payment + Terms ── -->
+    <div style="display:flex;gap:32px;align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:34px;font-weight:800;letter-spacing:-0.02em;line-height:1;margin-bottom:16px">PAGO</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:2px">MÉTODO: ${(v.metodoPago||'—').toUpperCase()}</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:16px">DOC: ${v.docId}</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div id="qr-${v.id}" style="width:76px;height:76px;flex-shrink:0"></div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:.08em;text-transform:uppercase">Escanea y síguenos</div>
+            <div style="font-size:13px;font-weight:700">@doreviajewelry</div>
+            <div style="font-size:12px;font-weight:500;color:#666">www.dorevia.co</div>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Garantía y términos</div>
+        <div style="font-size:10.5px;font-weight:500;color:#444;line-height:1.6;margin-bottom:10px">Garantía de por vida sobre el oro 18k: cubre defectos de costura, soldadura y cierre. No cubre rayones, golpes, deformaciones ni pérdida derivados del uso o mal manejo.</div>
+        <div style="font-size:10.5px;font-weight:500;color:#444;line-height:1.6;font-style:italic">Gracias por confiar en Dorevia. Cada pieza está hecha a mano con dedicación.</div>
       </div>
     </div>
 
     <!-- ── Footer ── -->
-    <div style="margin-top:24px;padding-top:16px;border-top:1px solid #000;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:15px;font-weight:700;color:#000000;letter-spacing:.06em">DOREVIA</div>
-      <div style="font-size:10px;color:#555;letter-spacing:.05em">Gracias por tu preferencia</div>
+    <div style="height:1px;background:#000;margin:28px 0 12px"></div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.04em;color:#000">
+      <div>DOREVIA · JOYERÍA</div>
+      <div>@DOREVIAJEWELRY</div>
+      <div>WWW.DOREVIA.CO</div>
     </div>
 
   </div>`;
